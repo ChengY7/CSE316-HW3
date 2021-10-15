@@ -16,6 +16,7 @@ export const GlobalStoreActionType = {
     CHANGE_LIST_NAME: "CHANGE_LIST_NAME",
     CLOSE_CURRENT_LIST: "CLOSE_CURRENT_LIST",
     LOAD_ID_NAME_PAIRS: "LOAD_ID_NAME_PAIRS",
+    SET_NEW_LIST: "SET_NEW_LIST",
     SET_CURRENT_LIST: "SET_CURRENT_LIST",
     SET_LIST_NAME_EDIT_ACTIVE: "SET_LIST_NAME_EDIT_ACTIVE"
 }
@@ -74,6 +75,16 @@ export const useGlobalStore = () => {
                     listMarkedForDeletion: null
                 });
             }
+            case GlobalStoreActionType.SET_NEW_LIST: {
+                return setStore({
+                    idNamePairs: store.idNamePairs,
+                    currentList: payload,
+                    newListCounter: store.newListCounter+1,
+                    isListNameEditActive: false,
+                    isItemEditActive: false,
+                    listMarkedForDeletion: null
+                });
+            }
             // UPDATE A LIST
             case GlobalStoreActionType.SET_CURRENT_LIST: {
                 return setStore({
@@ -99,6 +110,40 @@ export const useGlobalStore = () => {
             default:
                 return store;
         }
+    }
+    store.setNewList = function (id) {
+        async function asyncSetCurrentList(id) {
+            let response = await api.getTop5ListById(id);
+            if (response.data.success) {
+                let top5List = response.data.top5List;
+
+                response = await api.updateTop5ListById(top5List._id, top5List);
+                if (response.data.success) {
+                    storeReducer({
+                        type: GlobalStoreActionType.SET_NEW_LIST,
+                        payload: top5List
+                    });
+                    store.history.push("/top5list/" + top5List._id);
+                }
+            }
+        }
+        asyncSetCurrentList(id);
+    }
+    store.addTop5List = function () {
+        let newKey = store.newListCounter;
+        let newName = "Untitled" + newKey;
+        let newList = {
+            key: newKey,
+            name: newName,
+            items: ["?", "?", "?", "?", "?"]
+        };
+        async function asyncAddTop5List() {
+            const response = await api.createTop5List(newList);
+            if (response.data.success) {
+                store.setNewList(response.data.top5List._id)
+            }
+        }
+        asyncAddTop5List();
     }
     // THESE ARE THE FUNCTIONS THAT WILL UPDATE OUR STORE AND
     // DRIVE THE STATE OF THE APPLICATION. WE'LL CALL THESE IN 
