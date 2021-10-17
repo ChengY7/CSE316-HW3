@@ -185,6 +185,7 @@ export const useGlobalStore = () => {
 
     // THIS FUNCTION PROCESSES CLOSING THE CURRENTLY LOADED LIST
     store.closeCurrentList = function () {
+        tps.clearAllTransactions();
         storeReducer({
             type: GlobalStoreActionType.CLOSE_CURRENT_LIST,
             payload: {}
@@ -290,7 +291,54 @@ export const useGlobalStore = () => {
             payload: null
         });
     }
+    store.showDelete = function (id) {
+        async function asyncSetCurrentList(id) {
+            let response = await api.getTop5ListById(id);
+            if (response.data.success) {
+                let top5List = response.data.top5List;
 
+                response = await api.updateTop5ListById(top5List._id, top5List);
+                if (response.data.success) {
+                    storeReducer({
+                        type: GlobalStoreActionType.SET_CURRENT_LIST,
+                        payload: top5List
+                    });
+                }
+            }
+        }
+        asyncSetCurrentList(id);
+        let modal = document.getElementById("delete-modal");
+        modal.classList.add("is-visible");
+        console.log(store.idNamePairs)
+    }
+    store.deleteMarkedList = function () {
+        async function asyncDeleteTop5List() {
+            const response = await api.deleteTop5ListById(store.currentList._id);
+            if (response.data.success) {
+                storeReducer({
+                    type: GlobalStoreActionType.SET_CURRENT_LIST,
+                    payload: null
+                });
+            }
+        }
+        asyncDeleteTop5List();
+        let modal = document.getElementById("delete-modal");
+        modal.classList.remove("is-visible");
+        store.loadIdNamePairs();
+    }
+    store.hideDeleteListModal = function () {
+        storeReducer({
+            type: GlobalStoreActionType.SET_CURRENT_LIST,
+            payload: null
+        });
+        let modal = document.getElementById("delete-modal");
+        modal.classList.remove("is-visible");
+        store.disableXButton();
+    }
+    store.disableXButton = function () {
+        let button = document.getElementById("close-button");
+        button.classList.add("top5-button-disabled");
+    }
     // THIS GIVES OUR STORE AND ITS REDUCER TO ANY COMPONENT THAT NEEDS IT
     return { store, storeReducer };
 }

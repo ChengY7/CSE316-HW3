@@ -16,6 +16,7 @@ function ListCard(props) {
     const { idNamePair, selected } = props;
 
     function handleLoadList(event) {
+        console.log("loading list")
         if (!event.target.disabled) {
             let _id = event.target.id;
             if (_id.indexOf('list-card-text-') >= 0)
@@ -50,6 +51,11 @@ function ListCard(props) {
     function handleUpdateText(event) {
         setText(event.target.value );
     }
+    function handleDeleteList(event) {
+        event.stopPropagation();
+        let id = event.target.id.replace("delete-list-","");
+        store.showDelete(id);
+    }
 
     let selectClass = "unselected-list-card";
     if (selected) {
@@ -76,6 +82,7 @@ function ListCard(props) {
                 type="button"
                 id={"delete-list-" + idNamePair._id}
                 className="list-card-button"
+                onClick={handleDeleteList}
                 value={"\u2715"}
             />
             <input
