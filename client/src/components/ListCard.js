@@ -29,6 +29,8 @@ function ListCard(props) {
 
     function handleToggleEdit(event) {
         event.stopPropagation();
+        document.getElementById("add-list-button").style.opacity=0.25;
+        document.getElementById("add-list-button").style.pointerEvents='none';
         toggleEdit();
     }
 
@@ -42,6 +44,8 @@ function ListCard(props) {
 
     function handleKeyPress(event) {
         if (event.code === "Enter") {
+            document.getElementById("add-list-button").style.opacity=1;
+            document.getElementById("add-list-button").style.pointerEvents='auto';
             let id = event.target.id.substring("list-".length);
             store.changeListName(id, text);
             toggleEdit();

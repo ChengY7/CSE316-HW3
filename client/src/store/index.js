@@ -129,6 +129,7 @@ export const useGlobalStore = () => {
             }
         }
         asyncSetCurrentList(id);
+        store.enableXButton();
     }
     store.addTop5List = function () {
         let newKey = store.newListCounter;
@@ -190,6 +191,8 @@ export const useGlobalStore = () => {
             type: GlobalStoreActionType.CLOSE_CURRENT_LIST,
             payload: {}
         });
+        store.checkUndo();
+        store.checkRedo();
     }
 
     // THIS FUNCTION LOADS ALL THE ID, NAME PAIRS SO WE CAN LIST ALL THE LISTS
@@ -208,6 +211,9 @@ export const useGlobalStore = () => {
             }
         }
         asyncLoadIdNamePairs();
+        store.disableXButton();
+        store.checkRedo();
+        store.checkUndo();
     }
 
     // THE FOLLOWING 8 FUNCTIONS ARE FOR COORDINATING THE UPDATING
@@ -231,14 +237,19 @@ export const useGlobalStore = () => {
             }
         }
         asyncSetCurrentList(id);
+        store.enableXButton();
     }
     store.addMoveItemTransaction = function (start, end) {
         let transaction = new MoveItem_Transaction(store, start, end);
         tps.addTransaction(transaction);
+        store.checkUndo();
+        store.checkRedo();
     }
     store.addChangeItemTransaction = function (index, oldText, newText) {
         let transaction = new ChangeItem_Transaction(store, index, oldText, newText);
         tps.addTransaction(transaction);
+        store.checkUndo();
+        store.checkRedo();
     }
     store.changeItem = function (index, text) {
         store.currentList.items[index]=text;
@@ -279,9 +290,13 @@ export const useGlobalStore = () => {
     }
     store.undo = function () {
         tps.undoTransaction();
+        store.checkUndo();
+        store.checkRedo();
     }
     store.redo = function () {
         tps.doTransaction();
+        store.checkUndo();
+        store.checkRedo();
     }
 
     // THIS FUNCTION ENABLES THE PROCESS OF EDITING A LIST NAME
@@ -321,7 +336,8 @@ export const useGlobalStore = () => {
                 });
             }
         }
-        asyncDeleteTop5List();
+        asyncDeleteTop5List().catch((e) => {
+        });
         let modal = document.getElementById("delete-modal");
         modal.classList.remove("is-visible");
         store.loadIdNamePairs();
@@ -333,11 +349,34 @@ export const useGlobalStore = () => {
         });
         let modal = document.getElementById("delete-modal");
         modal.classList.remove("is-visible");
-        store.disableXButton();
     }
     store.disableXButton = function () {
         let button = document.getElementById("close-button");
         button.classList.add("top5-button-disabled");
+    }
+    store.enableXButton = function () {
+        let button = document.getElementById("close-button");
+        button.classList.remove("top5-button-disabled");
+    }
+    store.checkRedo = function () {
+        if (!tps.hasTransactionToRedo()) {
+            let button = document.getElementById("redo-button");
+            button.classList.add("top5-button-disabled");
+        }
+        else {
+            let button = document.getElementById("redo-button");
+            button.classList.remove("top5-button-disabled");
+        }
+    }
+    store.checkUndo = function () {
+        if (!tps.hasTransactionToUndo()) {
+            let button = document.getElementById("undo-button");
+            button.classList.add("top5-button-disabled");
+        }
+        else {
+            let button = document.getElementById("undo-button");
+            button.classList.remove("top5-button-disabled");
+        }
     }
     // THIS GIVES OUR STORE AND ITS REDUCER TO ANY COMPONENT THAT NEEDS IT
     return { store, storeReducer };

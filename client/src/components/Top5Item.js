@@ -43,6 +43,14 @@ function Top5Item(props) {
         // UPDATE THE LIST
         store.addMoveItemTransaction(sourceId, targetId);
     }
+    function ToggleEdit(event) {
+        for (let i=1; i<6; i++) {
+            if ("edit-item-"+i!=event.target.id) {
+                document.getElementById("edit-item-"+i).classList.add("top5-button-disabled")
+            }
+        }
+        handleToggleEdit();
+    }
     function handleToggleEdit(event) {
         setOldText(props.text);
         let newActive = !editActive;
@@ -50,6 +58,11 @@ function Top5Item(props) {
     }
     let handleKeyPress = (event) => {
         if (event.code === "Enter") {
+            for (let i=1; i<6; i++) {
+                if ("edit-items"+i!=event.target.id) {
+                    document.getElementById("edit-item-"+i).classList.remove("top5-button-disabled")
+                }
+            }
             store.addChangeItemTransaction(event.target.id.slice(-1)-1, oldText, text);
             handleToggleEdit()
         }
@@ -90,9 +103,9 @@ function Top5Item(props) {
         >
             <input
                 type="button"
-                id={"edit-item-" + index + 1}
+                id={"edit-item-" + (index + 1)}
                 className="list-card-button"
-                onClick={handleToggleEdit}
+                onClick={ToggleEdit}
                 value={"\u270E"}
             />
             {props.text}
