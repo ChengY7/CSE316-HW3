@@ -324,17 +324,10 @@ export const useGlobalStore = () => {
         asyncSetCurrentList(id);
         let modal = document.getElementById("delete-modal");
         modal.classList.add("is-visible");
-        console.log(store.idNamePairs)
     }
     store.deleteMarkedList = function () {
         async function asyncDeleteTop5List() {
             const response = await api.deleteTop5ListById(store.currentList._id);
-            if (response.data.success) {
-                storeReducer({
-                    type: GlobalStoreActionType.SET_CURRENT_LIST,
-                    payload: null
-                });
-            }
         }
         asyncDeleteTop5List().catch((e) => {
         });
